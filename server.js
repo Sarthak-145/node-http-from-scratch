@@ -1,10 +1,14 @@
 import net from 'net';
 
-console.log('Yes I am alive');
-
 const server = net.createServer((socket) => {
   socket.on('data', (chunk) => {
-    console.log('RAW:', chunk.toString());
+    console.log('RAW:', chunk);
+  });
+  socket.on('end', () => {
+    console.log('Client hang up');
+  });
+  socket.on('error', () => {
+    console.log('socket error: ', err.message);
   });
 });
 
