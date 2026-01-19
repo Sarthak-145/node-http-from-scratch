@@ -44,7 +44,7 @@ const server = net.createServer((socket) => {
 
           request.headers[key] = value;
         }
-        console.log('Request object: \n' + request);
+        console.log('Request object: \n', request);
       }
     }
   });
@@ -53,7 +53,7 @@ const server = net.createServer((socket) => {
     console.log('Client hang up');
   });
   socket.on('error', (err) => {
-    console.log('socket error: ' + err.message);
+    console.log('socket error: ', err.message);
   });
 });
 
