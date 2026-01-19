@@ -3,10 +3,19 @@ import net from 'net';
 const server = net.createServer((socket) => {
   let buffer = '';
   let headerParsed = false;
+  const MAX_HEADER_SIZE = 8 * 1024;
 
   socket.on('data', (chunk) => {
     buffer += chunk.toString();
     // here check if buffer has \r\n\r\n (ent of the header)
+
+    if (!headerParsed && buffer.length > MAX_HEADER_SIZE) {
+      //format should be like this -> protocol, status code and then message
+      //optionally can add headers, but I'll not for now.
+      socket.end('HTTP/1.1 431 Request Header Fields Too Large\r\n\r\n');
+      socket.destroy(); //optional end() also does the job, this is hard kill
+      return;
+    }
 
     if (!headerParsed) {
       //here header ends (at headerEndIndex)
