@@ -2,35 +2,36 @@ import net from 'net';
 
 const server = net.createServer((socket) => {
   let buffer = '';
-  let headerParsed = false;
+  // state to handle multirequests
+  let state = 'HEADERS';
+  let contentLength = 0;
+  let body = '';
   const MAX_HEADER_SIZE = 8 * 1024;
 
   socket.on('data', (chunk) => {
     buffer += chunk.toString();
-    // here check if buffer has \r\n\r\n (ent of the header)
 
-    if (!headerParsed && buffer.length > MAX_HEADER_SIZE) {
-      //format should be like this -> protocol, status code and then message
-      //optionally can add headers, but I'll not for now.
-      socket.end('HTTP/1.1 431 Request Header Fields Too Large\r\n\r\n');
-      socket.destroy(); //optional end() also does the job, this is hard kill
-      return;
-    }
+    while (true) {
+      if (state === 'HEADERS') {
+        if (buffer.length > MAX_HEADER_SIZE) {
+          //format should be like this -> protocol, status code and then message
+          //optionally can add headers, but I'll not for now.
+          socket.end('HTTP/1.1 431 Request Header Fields Too Large\r\n\r\n');
+          socket.destroy(); //optional end() also does the job, this is hard kill
+          return;
+        }
 
-    if (!headerParsed) {
-      //here header ends (at headerEndIndex)
-      const headerEndIndex = buffer.indexOf('\r\n\r\n');
-      if (headerEndIndex !== -1) {
-        //this means we've got the full header now
+        //here header ends (at headerEndIndex)
+        const headerEndIndex = buffer.indexOf('\r\n\r\n');
+        if (headerEndIndex === -1) return; //return if header is incomplete
+
+        //here we've got the full header now
         const headerData = buffer.slice(0, headerEndIndex);
         //log the complete header
         console.log('Header: \n', headerData);
 
         //now remove header from the buffer
         buffer = buffer.slice(headerEndIndex + 4); //+4 cause of those four \r\n\r\n
-
-        //now header is parsed and we only have body (if present)
-        headerParsed = true;
 
         //split line by line
         const lines = headerData.split('\r\n');
@@ -53,7 +54,21 @@ const server = net.createServer((socket) => {
 
           request.headers[key] = value;
         }
+        contentLength = Number(request.headers['content-length']) || 0;
         console.log('Request object: \n', request);
+        state = 'BODY';
+        body = '';
+      }
+
+      if (state === 'BODY') {
+        if (contentLength > buffer.length) return; //whole body is yet to come
+        body = buffer.slice(0, contentLength);
+        buffer = buffer.slice(contentLength);
+        console.log('BODY: ', body);
+
+        state = 'HEADER';
+        body = '';
+        contentLength = 0;
       }
     }
   });
