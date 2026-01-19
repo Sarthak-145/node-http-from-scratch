@@ -13,15 +13,38 @@ const server = net.createServer((socket) => {
       const headerEndIndex = buffer.indexOf('\r\n\r\n');
       if (headerEndIndex !== -1) {
         //this means we've got the full header now
-        const header = buffer.slice(0, headerEndIndex);
+        const headerData = buffer.slice(0, headerEndIndex);
         //log the complete header
-        console.log('Header: ', header);
+        console.log('Header: \n', headerData);
 
         //now remove header from the buffer
         buffer = buffer.slice(headerEndIndex + 4); //+4 cause of those four \r\n\r\n
 
         //now header is parsed and we only have body (if present)
         headerParsed = true;
+
+        //split line by line
+        const lines = headerData.split('\r\n');
+        //method, path and protocol are in first line always
+        const [method, path, protocol] = lines[0].split(' ');
+        //req object
+        const request = {
+          method,
+          path,
+          protocol,
+          headers: {},
+        };
+
+        //rest of the lines
+        for (let i = 1; i < lines.length; i++) {
+          const KeyendIndex = lines[i].indexOf(':');
+          if (KeyendIndex === -1) continue;
+          const key = lines[i].slice(0, KeyendIndex).trim().toLowerCase();
+          const value = lines[i].slice(KeyendIndex + 1).trim();
+
+          request.headers[key] = value;
+        }
+        console.log('Request object: \n' + request);
       }
     }
   });
@@ -30,7 +53,7 @@ const server = net.createServer((socket) => {
     console.log('Client hang up');
   });
   socket.on('error', (err) => {
-    console.log('socket error: ', err.message);
+    console.log('socket error: ' + err.message);
   });
 });
 
