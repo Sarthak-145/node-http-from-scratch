@@ -3,16 +3,16 @@ import net from 'net';
 const server = net.createServer((socket) => {
   let buffer = '';
   // state to handle multirequests
-  let state = 'HEADERS';
+  let state = 'HEADER';
   let contentLength = 0;
   let body = '';
   const MAX_HEADER_SIZE = 8 * 1024;
-
+  const MAX_BODY_SIZE = 1024 * 1024;
   socket.on('data', (chunk) => {
     buffer += chunk.toString();
 
     while (true) {
-      if (state === 'HEADERS') {
+      if (state === 'HEADER') {
         if (buffer.length > MAX_HEADER_SIZE) {
           //format should be like this -> protocol, status code and then message
           //optionally can add headers, but I'll not for now.
@@ -56,6 +56,12 @@ const server = net.createServer((socket) => {
         }
         contentLength = Number(request.headers['content-length']) || 0;
         console.log('Request object: \n', request);
+
+        //cap the body size
+        if (contentLength > MAX_BODY_SIZE) {
+          socket.end('HTTP/1.1 431 REquest Body Fields Too Large\r\n\r\n');
+          socket.destroy();
+        }
         state = 'BODY';
         body = '';
       }
