@@ -1,15 +1,15 @@
 import net from 'net';
 
 const server = net.createServer((socket) => {
-  let buffer = '';
+  let buffer = Buffer.alloc(0);
   // state to handle multirequests
   let state = 'HEADER';
   let contentLength = 0;
-  let body = '';
+  let body = Buffer.alloc(0);
   const MAX_HEADER_SIZE = 8 * 1024;
   const MAX_BODY_SIZE = 1024 * 1024;
   socket.on('data', (chunk) => {
-    buffer += chunk.toString();
+    buffer = Buffer.concat([buffer, chunk]);
 
     while (true) {
       if (state === 'HEADER') {
@@ -22,11 +22,13 @@ const server = net.createServer((socket) => {
         }
 
         //here header ends (at headerEndIndex)
-        const headerEndIndex = buffer.indexOf('\r\n\r\n');
+        const HEADER_DELIMITER = Buffer.from('\r\n\r\n');
+        const headerEndIndex = buffer.indexOf(HEADER_DELIMITER);
         if (headerEndIndex === -1) return; //return if header is incomplete
 
         //here we've got the full header now
-        const headerData = buffer.slice(0, headerEndIndex);
+        const headerBuffer = buffer.slice(0, headerEndIndex); //bytes
+        const headerData = headerBuffer.toString('utf-8');
         //log the complete header
         console.log('Header: \n', headerData);
 
@@ -59,21 +61,24 @@ const server = net.createServer((socket) => {
 
         //cap the body size
         if (contentLength > MAX_BODY_SIZE) {
-          socket.end('HTTP/1.1 431 REquest Body Fields Too Large\r\n\r\n');
+          socket.end('HTTP/1.1 413 Payload Too Large\r\n\r\n');
           socket.destroy();
         }
         state = 'BODY';
-        body = '';
+        body = Buffer.alloc(0);
       }
 
       if (state === 'BODY') {
         if (contentLength > buffer.length) return; //whole body is yet to come
+
         body = buffer.slice(0, contentLength);
         buffer = buffer.slice(contentLength);
-        console.log('BODY: ', body);
+
+        const bodyData = body.toString('utf-8');
+        console.log('BODY: ', bodyData);
 
         state = 'HEADER';
-        body = '';
+        body = Buffer.alloc(0);
         contentLength = 0;
       }
     }
