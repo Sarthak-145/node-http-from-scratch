@@ -60,6 +60,14 @@ const server = net.createServer((socket) => {
         }
         contentLength = Number(request.headers['content-length']) || 0;
 
+        //don't enter body if contentlength is zero.
+        if (contentLength === 0) {
+          handleRequest(socket, request, Buffer.alloc(0));
+          request = null;
+          state = 'HEADER';
+          continue;
+        }
+
         //this is global now (for current socket)
         // console.log('Request object: \n', request);
 
