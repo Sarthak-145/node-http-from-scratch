@@ -1,4 +1,5 @@
 import net from 'net';
+import handleRequest from './handlerequest.js';
 
 const server = net.createServer((socket) => {
   let buffer = Buffer.alloc(0);
@@ -77,12 +78,14 @@ const server = net.createServer((socket) => {
         body = buffer.slice(0, contentLength);
         buffer = buffer.slice(contentLength);
 
+        handleRequest(socket, request, body);
+
         const bodyData = body.toString('utf-8');
 
         //test if req is working in this scope
-        console.log('Request object: \n', request);
-        console.log('BODY: ', bodyData);
-
+        // console.log('Request object: \n', request);
+        // console.log('BODY: ', bodyData);
+        request = null;
         state = 'HEADER';
         body = Buffer.alloc(0);
         contentLength = 0;
