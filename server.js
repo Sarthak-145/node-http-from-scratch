@@ -6,6 +6,7 @@ const server = net.createServer((socket) => {
   let state = 'HEADER';
   let contentLength = 0;
   let body = Buffer.alloc(0);
+  let request = null;
   const MAX_HEADER_SIZE = 8 * 1024;
   const MAX_BODY_SIZE = 1024 * 1024;
   socket.on('data', (chunk) => {
@@ -30,7 +31,7 @@ const server = net.createServer((socket) => {
         const headerBuffer = buffer.slice(0, headerEndIndex); //bytes
         const headerData = headerBuffer.toString('utf-8');
         //log the complete header
-        console.log('Header: \n', headerData);
+        // console.log('Header: \n', headerData);
 
         //now remove header from the buffer
         buffer = buffer.slice(headerEndIndex + 4); //+4 cause of those four \r\n\r\n
@@ -40,7 +41,7 @@ const server = net.createServer((socket) => {
         //method, path and protocol are in first line always
         const [method, path, protocol] = lines[0].split(' ');
         //req object
-        const request = {
+        request = {
           method,
           path,
           protocol,
@@ -57,7 +58,9 @@ const server = net.createServer((socket) => {
           request.headers[key] = value;
         }
         contentLength = Number(request.headers['content-length']) || 0;
-        console.log('Request object: \n', request);
+
+        //this is global now (for current socket)
+        // console.log('Request object: \n', request);
 
         //cap the body size
         if (contentLength > MAX_BODY_SIZE) {
@@ -75,6 +78,9 @@ const server = net.createServer((socket) => {
         buffer = buffer.slice(contentLength);
 
         const bodyData = body.toString('utf-8');
+
+        //test if req is working in this scope
+        console.log('Request object: \n', request);
         console.log('BODY: ', bodyData);
 
         state = 'HEADER';
