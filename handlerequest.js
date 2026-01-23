@@ -2,6 +2,8 @@ const handleRequest = (socket, request, body) => {
   //console.log('request obj: ', request);
   //console.log('body in text: ', body.toString('utf-8'));
 
+  console.log('Entry in the handlrequest');
+
   if (request.headers.connection === 'close') {
     socket.end(
       `HTTP/1.1 200 OK\r\n` +
@@ -20,6 +22,7 @@ const handleRequest = (socket, request, body) => {
       `\r\n` +
       resBody;
     socket.write(res);
+    console.log('request is responded!');
   }
 };
 

@@ -12,6 +12,7 @@ const server = net.createServer((socket) => {
   const MAX_BODY_SIZE = 1024 * 1024;
   socket.on('data', (chunk) => {
     buffer = Buffer.concat([buffer, chunk]);
+    console.log('this chunk is:', chunk.toString());
 
     while (true) {
       if (state === 'HEADER') {
@@ -27,6 +28,8 @@ const server = net.createServer((socket) => {
         const HEADER_DELIMITER = Buffer.from('\r\n\r\n');
         const headerEndIndex = buffer.indexOf(HEADER_DELIMITER);
         if (headerEndIndex === -1) return; //return if header is incomplete
+
+        console.log('Got the full header!!');
 
         //here we've got the full header now
         const headerBuffer = buffer.slice(0, headerEndIndex); //bytes
@@ -85,14 +88,13 @@ const server = net.createServer((socket) => {
 
         body = buffer.slice(0, contentLength);
         buffer = buffer.slice(contentLength);
+        const bodyData = body.toString('utf-8');
+        console.log('Request object after parsing is: \n', request);
+        console.log('BODY after parsing: ', bodyData);
 
         handleRequest(socket, request, body);
 
-        const bodyData = body.toString('utf-8');
-
         //test if req is working in this scope
-        // console.log('Request object: \n', request);
-        // console.log('BODY: ', bodyData);
         request = null;
         state = 'HEADER';
         body = Buffer.alloc(0);
