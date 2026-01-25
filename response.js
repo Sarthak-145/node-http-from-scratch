@@ -1,4 +1,4 @@
-const send = (socket, body = '', status = 200, headers = {}) => {
+const send = (socket, { body = '', status = 200, headers = {} } = {}) => {
   const defaultHeaders = {
     'Content-Type': 'text/plain',
     'Content-Length': Buffer.byteLength(body),

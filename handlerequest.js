@@ -7,7 +7,7 @@ const handleRequest = (socket, request, body) => {
   console.log('Entry in the handlrequest');
 
   if (request.headers.connection === 'close') {
-    send(socket, '', 200, { Connection: 'close' });
+    send(socket, { status: 200, headers: { Connection: 'close' } });
     socket.end();
     return;
   }
@@ -18,11 +18,13 @@ const handleRequest = (socket, request, body) => {
     // like check db, match password and then sign a token.
 
     // for now just a normal message
-    send(socket, bodyText);
+    send(socket, { body: bodyText });
     return;
   }
 
-  send(socket, `Hello client I got ${body.length} bytes of body from you :)`);
+  send(socket, {
+    body: `Hello client I got ${body.length} bytes of body from you :)`,
+  });
   console.log('request is responded!');
 };
 
