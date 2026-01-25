@@ -11,7 +11,7 @@ const handleRequest = (socket, request, body) => {
     socket.end();
     return;
   }
-  send(socket, 'Hello client I got ${body.length} bytes of body from you :)');
+  send(socket, `Hello client I got ${body.length} bytes of body from you :)`);
   console.log('request is responded!');
 };
 
