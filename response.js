@@ -7,14 +7,14 @@ const send = (socket, body = '', status = 200, headers = {}) => {
 
   const allHeaders = { ...defaultHeaders, ...headers };
 
-  const headerStr = `HTTP/1.1 ${status} OK\r\n`;
+  let headerStr = `HTTP/1.1 ${status} OK\r\n`;
 
   // we can say anti-parsing. we want to send string and not an object.
   for (const key in allHeaders) {
     headerStr += `${key}:${allHeaders[key]}\r\n`;
   }
 
-  socket.write(headerStr, '\r\n', body);
+  socket.write(headerStr + '\r\n' + body);
 };
 
 export default send;
