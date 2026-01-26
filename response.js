@@ -1,3 +1,9 @@
+const STATUS_TEXT = {
+  200: 'OK',
+  404: 'Not Found',
+  500: 'Internal Server Error',
+};
+
 const send = (socket, { body = '', status = 200, headers = {} } = {}) => {
   const defaultHeaders = {
     'Content-Type': 'text/plain',
@@ -7,7 +13,9 @@ const send = (socket, { body = '', status = 200, headers = {} } = {}) => {
 
   const allHeaders = { ...defaultHeaders, ...headers };
 
-  let headerStr = `HTTP/1.1 ${status} OK\r\n`;
+  const reason = STATUS_TEXT[status] || 'OK';
+
+  let headerStr = `HTTP/1.1 ${status} ${reason}\r\n`;
 
   // we can say anti-parsing. we want to send string and not an object.
   for (const key in allHeaders) {
