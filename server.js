@@ -78,6 +78,7 @@ const server = net.createServer((socket) => {
         if (contentLength > MAX_BODY_SIZE) {
           socket.end('HTTP/1.1 413 Payload Too Large\r\n\r\n');
           socket.destroy();
+          return;
         }
         state = 'BODY';
         body = Buffer.alloc(0);
@@ -104,7 +105,7 @@ const server = net.createServer((socket) => {
   });
 
   socket.on('end', () => {
-    console.log('Client hang up');
+    console.log('Client hang up\n\n');
   });
   socket.on('error', (err) => {
     console.log('socket error: ', err.message);
