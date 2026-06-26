@@ -23,9 +23,9 @@ const handleRequest = (socket, request, body) => {
   }
 
   send(socket, {
-    body: `Hello client I got ${body.length} bytes of body from you :)`,
+    body: `Total no of bytes recieved: ${body.length}\n`,
   });
-  console.log('request is responded!');
+  console.log('request is responded!\n\n');
 };
 
 export default handleRequest;

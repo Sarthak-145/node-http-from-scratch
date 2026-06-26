@@ -6,7 +6,6 @@ const server = net.createServer((socket) => {
   // state to handle multirequests
   let state = 'HEADER';
   let contentLength = 0;
-  let body = Buffer.alloc(0);
   let request = null;
   const MAX_HEADER_SIZE = 8 * 1024;
   const MAX_BODY_SIZE = 1024 * 1024;
@@ -81,7 +80,6 @@ const server = net.createServer((socket) => {
           return;
         }
         state = 'BODY';
-        body = Buffer.alloc(0);
       }
 
       if (state === 'BODY') {
