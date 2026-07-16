@@ -59,7 +59,15 @@ const server = net.createServer((socket) => {
         }
 
         //method, path and protocol are in first line always
-        const [method, path, protocol] = lines[0].split(' ');
+        const [method, path, protocol] = parts;
+
+        //validate protocol, it should start with HTTP/
+        if (!protocol.startsWith('HTTP/')) {
+          socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+
         //req object
         request = {
           method,
