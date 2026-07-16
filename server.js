@@ -50,6 +50,14 @@ const server = net.createServer((socket) => {
           return;
         }
 
+        // validate whether first line has three parts or not
+        const parts = firstLine.split(' ');
+        if (parts.length !== 3) {
+          socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+
         //method, path and protocol are in first line always
         const [method, path, protocol] = lines[0].split(' ');
         //req object
