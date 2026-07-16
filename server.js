@@ -68,6 +68,22 @@ const server = net.createServer((socket) => {
           return;
         }
 
+        // validate method
+        const validMethods = [
+          'GET',
+          'POST',
+          'PUT',
+          'DELETE',
+          'PATCH',
+          'OPTIONS',
+          'HEAD',
+        ];
+        if (!validMethods.includes(method)) {
+          socket.end('HTTP/1.1 405 Method Not Allowed\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+
         //req object
         request = {
           method,
@@ -85,6 +101,7 @@ const server = net.createServer((socket) => {
 
           request.headers[key] = value;
         }
+
         contentLength = Number(request.headers['content-length']) || 0;
 
         //don't enter body if contentlength is zero.
