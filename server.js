@@ -41,6 +41,15 @@ const server = net.createServer((socket) => {
 
         //split line by line
         const lines = headerData.split('\r\n');
+
+        // validate whether first line is present or not
+        const firstLine = lines[0];
+        if (!firstLine) {
+          socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+
         //method, path and protocol are in first line always
         const [method, path, protocol] = lines[0].split(' ');
         //req object
